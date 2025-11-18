@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->foreignIdFor(\App\Models\Event::class)->constrained();
             $table->string('status', 10)->default(ReservationStatus::RESERVED->value)->index();
             $table->unsignedInteger('amount')->default(1);
-            $table->timestamp('expire_at')->index();
+            $table->timestamp('expires_at')->index();
             $table->timestamps();
         });
     }
