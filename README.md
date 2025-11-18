@@ -181,3 +181,10 @@ docker exec -it backend php artisan migrate --seed --force
 6. **Uygulamayı Çalıştırın**
 
 Artık uygulamaya http://localhost adresinden ulaşabilirsiniz.
+
+
+## Testleri çalıştırma
+
+~~~bash
+docker exec -it backend php artisan test
+~~~
