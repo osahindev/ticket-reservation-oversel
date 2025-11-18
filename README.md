@@ -20,9 +20,40 @@ Yarış durumlarını önlemek için kötümser kilitleme (`lockForUpdate`) kull
 
 ## API Endpoint'leri
 
-1. Reservasyon Oluşturma
+#### 1. Etkinlik Listesi
 
-* Örnek istek:
+* **URL:** /api/events
+* **Method:** GET
+* **Açıklama:** Tüm etkinlikleri listeler
+* **Örnek İstek:**
+
+~~~bash
+curl -X GET http://localhost/api/events
+~~~
+
+* **Örnek Yanıt:**
+
+~~~json
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "Örnek Etkinlik",
+            "ticket_quantity": 1990
+        }
+    ]
+}
+~~~
+
+#### 2. Reservasyon Oluşturma
+
+* **URL:** /api/reserve
+* **Method:** POST
+* **Açıklama:** Bir etkinlikten bilet rezervasyonu yapar.
+* **Parametreler:**
+  * event_id: Etkinlik ID'si
+  * amount: Rezerve edilecek bilet adeti
+* **Örnek İstek:**
 
 ~~~bash
 curl -X POST http://localhost/api/reserve \
@@ -30,7 +61,7 @@ curl -X POST http://localhost/api/reserve \
   -d '{"event_id": 1, "amount": 1}'
 ~~~
 
-* Örnek yanıt:
+* **Örnek yanıt:**
 
 ~~~json
 {
@@ -46,9 +77,17 @@ curl -X POST http://localhost/api/reserve \
 }
 ~~~
 
-2. Satın Alma
+#### 3. Satın Alma
 
-* Örnek istek:
+
+* **URL:** /api/purchase
+* **Method:** POST
+* **Açıklama:** Bekleyen rezervasyonu satın alındı durumunu günceller.
+* **Parametreler:**
+  * reservation_id: Rezervasyon ID'si
+* **Headers:**
+  * Visitor-Token: Kullanıcı için oluşturulmuş UUID.
+* **Örnek İstek:**
 
 ~~~bash
 curl -X POST http://localhost/api/purchase \
@@ -57,7 +96,7 @@ curl -X POST http://localhost/api/purchase \
   -d '{"reservation_id": 1}'
 ~~~
 
-* Örnek yanıt:
+* **Örnek yanıt:**
 
 ~~~json
 {
