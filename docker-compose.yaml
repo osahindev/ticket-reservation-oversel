@@ -11,8 +11,19 @@ services:
       - ./:/app
     depends_on:
       - postgresql
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "while :; do php /app/artisan schedule:run; sleep 60; done"
+    volumes:
+      - .:/app
+    networks:
+      - ticketing-network
   postgresql:
     image: postgres:18
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=example
     networks:

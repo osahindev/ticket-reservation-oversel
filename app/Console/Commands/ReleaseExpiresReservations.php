@@ -6,6 +6,7 @@ use App\Interfaces\Services\IEventService;
 use App\Interfaces\Services\IReservationService;
 use DB;
 use Illuminate\Console\Command;
+use Log;
 
 class ReleaseExpiresReservations extends Command
 {
@@ -28,6 +29,7 @@ class ReleaseExpiresReservations extends Command
      */
     public function handle()
     {
+        Log::info(now() . " - Releasing expired reservations");
         $reservationService = app(IReservationService::class);
         $eventService = app(IEventService::class);
         $expiresReservations = $reservationService->getExpiredReservations();
@@ -43,5 +45,6 @@ class ReleaseExpiresReservations extends Command
                 $reservation->delete();
             });
         }
+        Log::info(now() . " - Finished releasing expired reservations");
     }
 }
