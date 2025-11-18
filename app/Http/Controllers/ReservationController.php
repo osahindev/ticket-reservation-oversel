@@ -32,4 +32,20 @@ class ReservationController extends Controller
 
         return new ReservationResource($reservation);
     }
+
+    public function purchase(Request $request)
+    {
+        $visitorToken = $this->userService->getVisitorToken();
+
+        if ($visitorToken === null) {
+            return response()->json(['error' => 'Visitor token is required'], 400);
+        }
+
+        $reservation = $this->reservationService->purchase(
+            userUuid: $visitorToken,
+            reservationId: $request->input('reservation_id')
+        );
+
+        return new ReservationResource($reservation);
+    }
 }

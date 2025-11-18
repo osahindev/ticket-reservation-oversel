@@ -18,13 +18,20 @@ class ReservationService implements IReservationService
     ) {
     }
 
+    public function getReservation(int $reservationId, string $userUuid): ?Reservation
+    {
+        return Reservation::where("id", $reservationId)
+            ->where("user_uid", $userUuid)
+            ->first();
+    }
+
     public function reserve(string $userUuid, int $eventId, int $amount): Reservation
     {
         return DB::transaction(function () use ($userUuid, $eventId, $amount) {
             $event = $this->eventService->getEventForUpdate($eventId);
 
-            throw_if($event === null, ModelNotFoundException::class, "Etkinlik bulunamadı.");
-            throw_if($event->ticket_quantity < $amount, \Exception::class, "Yeterli miktarda bilet yok.");
+            throw_if($event === null, ModelNotFoundException::class, "Event is not found.");
+            throw_if($event->ticket_quantity < $amount, \Exception::class, "Not enough tickets available.");
 
             $this->eventService->decreaseTicketQuantity($event, $amount);
 
@@ -36,5 +43,19 @@ class ReservationService implements IReservationService
                 "expires_at" => now()->addSeconds(self::RESERVATION_TIMEOUT),
             ]);
         });
+    }
+
+    public function purchase(string $userUuid, int $reservationId): ?Reservation
+    {
+        $reservation = $this->getReservation($reservationId, $userUuid);
+
+        throw_if($reservation === null, ModelNotFoundException::class, "Reservation is not found.");
+        throw_if($reservation->expires_at->isPast(), \Exception::class, "Reservation has expired.");
+        throw_if($reservation->status !== ReservationStatus::RESERVED, \Exception::class, "This reservation already purchased.");
+
+        $reservation->status = ReservationStatus::PURCHASED;
+        $reservation->save();
+
+        return $reservation;
     }
 }
