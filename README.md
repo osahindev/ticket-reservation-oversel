@@ -121,8 +121,6 @@ curl -X POST http://localhost/api/purchase \
 Gereksinimler:
 
 * Docker ve Docker Compose
-* PHP 8.2+
-* Composer
 
 Adımlar:
 
@@ -133,18 +131,11 @@ git clone https://github.com/osahindev/ticket-reservation-oversel.git
 cd ticket-reservation-oversel
 ~~~
 
-2. **Bağımlılıkları Yükleyin**
-
-~~~bash
-composer install
-~~~
-
-3. **.env Dosyasını yapılandırın**
+2. **.env Dosyasını yapılandırın**
 .env.example dosyasından .env dosyası oluşturun ve bir application key oluşturun.
 
 ~~~bash
 cp .env.example .env
-php artisan key:generate
 ~~~
 
 Veritabanı ayarlarını yapılandırın.
@@ -158,27 +149,43 @@ DB_USERNAME=postgres
 DB_PASSWORD=example
 ~~~
 
-4. **Servisleri Ayağa Kaldırın**
+3. **Servisleri Build Edin**
 
 ~~~bash
 docker compose build
-docker compose up -d
 ~~~
 
 veya 
 
 ~~~bash
 docker-compose build
-docker-compose up -d
 ~~~
 
-5. **Veritabanını Kurun**
+4. **Servisleri Ayağa Kaldırın**
+
+~~~bash
+docker compose up -d
+~~~
+
+veya 
+
+~~~bash
+docker compose up -d
+~~~
+
+5. **App key oluşturun**
+
+~~~bash
+docker exec -it backend php artisan key:generate
+~~~
+
+6. **Veritabanını Kurun**
 
 ~~~bash
 docker exec -it backend php artisan migrate --seed --force
 ~~~
 
-6. **Uygulamayı Çalıştırın**
+7. **Uygulamayı Çalıştırın**
 
 Artık uygulamaya http://localhost adresinden ulaşabilirsiniz.
 

@@ -10,6 +10,7 @@ services:
       - ticketing-network
     volumes:
       - ./:/app
+      - /app/vendor
     depends_on:
       - postgresql
   scheduler:
@@ -20,6 +21,7 @@ services:
     command: sh -c "while :; do php /app/artisan schedule:run; sleep 60; done"
     volumes:
       - .:/app
+      - /app/vendor
     networks:
       - ticketing-network
   postgresql:
