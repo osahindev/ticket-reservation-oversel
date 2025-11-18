@@ -1,59 +1,74 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Konser Bileti Hücumu
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Çözüm Genel Bakışı
+Bu proje, konser biletlerinin eşzamanlı olarak rezerve edilmesini sağlayan bir sistemdir. Laravel framework'ü kullanılarak geliştirilmiştir ve Docker ile konteynerize edilmiştir. PostgreSQL veritabanı, bilet rezervasyonları ve eşzamanlılık problemlerini çözmek için kullanılmıştır.
 
-## About Laravel
+## Eşzamanlılık Stratejisi
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Yarış durumlarını önlemek için kötümser kilitleme (`lockForUpdate`) kullanılmıştır. Bu yaklaşım, aynı anda birden fazla işlemin aynı kaydı değiştirmesini engeller. 
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Avantajlar**: Veri tutarlılığı garanti edilir.
+- **Dezavantajlar**: Kilitlenme durumlarında performans düşebilir.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Veritabanı Şeması
 
-## Learning Laravel
+### Modeller ve İlişkiler
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- **Event**: Bir etkinliği temsil eder.
+- **Reservation**: Bir etkinlik için yapılan bilet rezervasyonunu temsil eder.
+- **İlişkiler**: `Event` birden fazla `Reservation` ile ilişkilidir.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## API Endpoint'leri
 
-## Laravel Sponsors
+1. Reservasyon Oluşturma
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+* Örnek istek:
 
-### Premium Partners
+~~~bash
+curl -X POST http://localhost/api/reserve \
+  -H "Content-Type: application/json" \
+  -d '{"event_id": 1, "amount": 1}'
+~~~
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+* Örnek yanıt:
 
-## Contributing
+~~~json
+{
+    "data": {
+        "id": 4,
+        "user_uid": "c9439d95-2123-4d0b-8967-50903fc0b9a8",
+        "amount": 10,
+        "status": "reserved",
+        "expires_at": "2025-11-18T07:54:23.000000Z",
+        "created_at": "2025-11-18T07:49:23.000000Z",
+        "updated_at": "2025-11-18T07:49:23.000000Z"
+    }
+}
+~~~
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2. Satın Alma
 
-## Code of Conduct
+* Örnek istek:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+~~~bash
+curl -X POST http://localhost/api/purchase \
+  -H "Content-Type: application/json" \
+  -H "Visitor-Token: c9439d95-2123-4d0b-8967-50903fc0b9a8"
+  -d '{"reservation_id": 1}'
+~~~
 
-## Security Vulnerabilities
+* Örnek yanıt:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+~~~json
+{
+    "data": {
+        "id": 6,
+        "user_uid": "397fbc8d-4313-49ee-96fe-b61274b7331a",
+        "amount": 10,
+        "status": "purchased",
+        "expires_at": "2025-11-18T08:11:02.000000Z",
+        "created_at": "2025-11-18T08:06:02.000000Z",
+        "updated_at": "2025-11-18T08:06:09.000000Z"
+    }
+}
+~~~
