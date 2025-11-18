@@ -1,0 +1,29 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - ticketing-network
+    volumes:
+      - ./:/app
+    depends_on:
+      - postgresql
+  postgresql:
+    image: postgres:18
+    environment:
+      - POSTGRES_PASSWORD=example
+    networks:
+      - ticketing-network
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+networks:
+  ticketing-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
