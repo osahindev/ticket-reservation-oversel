@@ -7,6 +7,7 @@ use App\Interfaces\Services\IEventService;
 use App\Interfaces\Services\IReservationService;
 use App\Models\Reservation;
 use DB;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ReservationService implements IReservationService
@@ -23,6 +24,13 @@ class ReservationService implements IReservationService
         return Reservation::where("id", $reservationId)
             ->where("user_uid", $userUuid)
             ->first();
+    }
+
+    public function getExpiredReservations(): Collection
+    {
+        return Reservation::where("expires_at", "<=", now())
+            ->where("status", ReservationStatus::RESERVED)
+            ->get();
     }
 
     public function reserve(string $userUuid, int $eventId, int $amount): Reservation

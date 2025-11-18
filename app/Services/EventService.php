@@ -11,6 +11,11 @@ class EventService implements IEventService
         return \App\Models\Event::where("id", $eventId)->lockForUpdate()->first();
     }
 
+    public function incrementTicketQuantity(\App\Models\Event $event, int $amount): int
+    {
+        return $event->increment("ticket_quantity", $amount);
+    }
+
     public function decreaseTicketQuantity(\App\Models\Event $event, int $amount): int
     {
         return $event->decrement("ticket_quantity", $amount);
