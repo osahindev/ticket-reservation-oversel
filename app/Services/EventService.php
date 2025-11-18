@@ -3,9 +3,15 @@
 namespace App\Services;
 
 use App\Interfaces\Services\IEventService;
+use Illuminate\Database\Eloquent\Collection;
 
 class EventService implements IEventService
 {
+    public function getAllEvents(): Collection
+    {
+        return \App\Models\Event::orderBy("created_at", "desc")->get();
+    }
+
     public function getEventForUpdate(int $eventId): ?\App\Models\Event
     {
         return \App\Models\Event::where("id", $eventId)->lockForUpdate()->first();
