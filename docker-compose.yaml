@@ -22,8 +22,6 @@ services:
       - ticketing-network
   postgresql:
     image: postgres:18
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=example
     networks:
