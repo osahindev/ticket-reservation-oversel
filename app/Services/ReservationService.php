@@ -23,6 +23,14 @@ class ReservationService implements IReservationService
     {
         return Reservation::where("id", $reservationId)
             ->where("user_uid", $userUuid)
+            ->lockForUpdate()
+            ->first();
+    }
+
+    public function getReservationById(int $reservationId): ?Reservation
+    {
+        return Reservation::where("id", $reservationId)
+            ->lockForUpdate()
             ->first();
     }
 
@@ -55,15 +63,17 @@ class ReservationService implements IReservationService
 
     public function purchase(string $userUuid, int $reservationId): ?Reservation
     {
-        $reservation = $this->getReservation($reservationId, $userUuid);
+        return DB::transaction(function () use ($userUuid, $reservationId) {
+            $reservation = $this->getReservation($reservationId, $userUuid);
 
-        throw_if($reservation === null, ModelNotFoundException::class, "Reservation is not found.");
-        throw_if($reservation->expires_at->isPast(), \Exception::class, "Reservation has expired.");
-        throw_if($reservation->status !== ReservationStatus::RESERVED, \Exception::class, "This reservation already purchased.");
+            throw_if($reservation === null, ModelNotFoundException::class, "Reservation is not found.");
+            throw_if($reservation->expires_at->isPast(), \Exception::class, "Reservation has expired.");
+            throw_if($reservation->status !== ReservationStatus::RESERVED, \Exception::class, "This reservation already purchased.");
 
-        $reservation->status = ReservationStatus::PURCHASED;
-        $reservation->save();
+            $reservation->status = ReservationStatus::PURCHASED;
+            $reservation->save();
 
-        return $reservation;
+            return $reservation;
+        });
     }
 }
