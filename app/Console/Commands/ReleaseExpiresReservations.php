@@ -30,25 +30,26 @@ class ReleaseExpiresReservations extends Command
     public function handle()
     {
         Log::info(now() . " - Releasing expired reservations");
-        DB::transaction(function () {
-            $reservationService = app(IReservationService::class);
-            $eventService = app(IEventService::class);
+
+        $reservationService = app(IReservationService::class);
+        $eventService = app(IEventService::class);
+
+        DB::transaction(function () use ($reservationService, $eventService) {
             $expiresReservations = $reservationService->getExpiredReservations();
 
             foreach ($expiresReservations as $reservation) {
-                DB::transaction(function () use ($reservation, $reservationService, $eventService) {
-                    // Lock the reservation for update to prevent race conditions
-                    $freshLockedReservation = $reservationService->getReservationById($reservation->id);
-                    $event = $eventService->getEventForUpdate($reservation->event_id);
+                // Lock the reservation for update to prevent race conditions
+                $freshLockedReservation = $reservationService->getReservationById($reservation->id);
+                $event = $eventService->getEventForUpdate($reservation->event_id);
 
-                    if ($event !== null) {
-                        $eventService->incrementTicketQuantity($event, $reservation->amount);
-                    }
+                if ($event !== null) {
+                    $eventService->incrementTicketQuantity($event, $reservation->amount);
+                }
 
-                    $freshLockedReservation->delete();
-                });
+                $freshLockedReservation->delete();
             }
-            Log::info(now() . " - Finished releasing expired reservations");
         });
+
+        Log::info(now() . " - Finished releasing expired reservations");
     }
 }
